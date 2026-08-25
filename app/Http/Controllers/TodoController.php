@@ -22,4 +22,31 @@ class TodoController extends Controller
 
         return redirect('/todo');
     }
+
+    public function edit($id)
+    {
+        $todo = Todo::findOrFail($id);
+
+        return view('todo-edit', compact('todo'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $todo = Todo::findOrFail($id);
+
+        $todo->update([
+            'task' => $request->task
+        ]);
+
+        return redirect('/todo');
+    }
+
+    public function destroy($id)
+    {
+        $todo = Todo::findOrFail($id);
+
+        $todo->delete();
+
+        return redirect('/todo');
+    }
 }

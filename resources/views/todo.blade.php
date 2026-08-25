@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>My To-Do List</title>
 </head>
@@ -7,6 +8,8 @@
 <body>
 
     <h1>My To-Do List</h1>
+
+    <!-- Add Todo -->
 
     <form action="/todo" method="POST">
 
@@ -19,35 +22,51 @@
             required
         >
 
-        <button type="submit">Add</button>
+        <button type="submit">
+            Add
+        </button>
 
     </form>
 
     <br>
+
+    <!-- Todo List -->
 
     <ul>
 
         @foreach ($todos as $todo)
 
             <li>
+
                 {{ $todo->task }}
 
-                <button onclick="deleteFromUI(this)">
-                    Delete
-                </button>
+                <a href="/todo/{{ $todo->id }}/edit">
+                    <button type="button">
+                        Edit
+                    </button>
+                </a>
+
+                <form
+                    action="/todo/{{ $todo->id }}"
+                    method="POST"
+                    style="display:inline"
+                >
+
+                    @csrf
+                    @method('DELETE')
+
+                    <button type="submit">
+                        Delete
+                    </button>
+
+                </form>
+
             </li>
 
         @endforeach
 
     </ul>
 
-    <script>
-
-        function deleteFromUI(button) {
-            button.parentElement.remove();
-        }
-
-    </script>
-
 </body>
+
 </html>

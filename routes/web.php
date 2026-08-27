@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TodoController;
 
 Route::get('/', function () {
-    return redirect('/todo');
+    return redirect('/');
 });
 
 Route::get('/todo', [TodoController::class, 'index']);

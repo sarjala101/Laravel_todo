@@ -9,5 +9,16 @@ class Todo extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['task'];
+    protected $fillable = [
+        'task',
+        'description',
+        'priority',
+        'is_completed',
+        'completed_at',
+    ];
+
+    protected $casts = [
+        'is_completed' => 'boolean',
+        'completed_at' => 'datetime',
+    ];
 }

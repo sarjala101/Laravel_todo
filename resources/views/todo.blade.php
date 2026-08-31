@@ -13,48 +13,133 @@
 
 </head>
 
+
 <body class="min-h-screen bg-gray-100">
 
-    <div class="max-w-2xl mx-auto px-4 py-10">
 
-        <!-- Header -->
+    <!-- SUCCESS POPUP -->
 
-        <div class="text-center mb-8">
+    @if(session('success'))
 
-            <h1 class="text-4xl font-bold text-gray-800">
-                My Todo List
-            </h1>
-
-            <p class="text-gray-500 mt-2">
-                Stay organized, one task at a time.
-            </p>
-
+        <div
+            id="success-message"
+            class="fixed top-5 right-5 z-50
+                   bg-green-600 text-white
+                   px-5 py-3 rounded-lg shadow-lg"
+        >
+            ✓ {{ session('success') }}
         </div>
 
+    @endif
 
-        <!-- Add Todo -->
 
-        <div class="bg-white rounded-xl shadow-sm p-5 mb-6">
+    <!-- ERROR POPUP -->
 
-            <form action="/todo" method="POST" class="flex gap-3">
+    @if(session('error'))
+
+        <div
+            id="error-message"
+            class="fixed top-5 right-5 z-50
+                   bg-red-600 text-white
+                   px-5 py-3 rounded-lg shadow-lg"
+        >
+            {{ session('error') }}
+        </div>
+
+    @endif
+
+
+
+    <div class="max-w-3xl mx-auto px-4 py-10">
+
+
+        <!-- TITLE -->
+
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">
+            My Todo List
+        </h1>
+
+
+
+        <!-- ADD TASK FORM -->
+
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                Add New Task
+            </h2>
+
+
+            <form
+                action="/todo"
+                method="POST"
+            >
 
                 @csrf
+
+
+                <!-- TASK -->
 
                 <input
                     type="text"
                     name="task"
-                    placeholder="What do you need to do?"
+                    placeholder="Enter task name"
+                    value="{{ old('task') }}"
+                    class="w-full border border-gray-300 rounded-lg
+                           px-4 py-3 mb-3
+                           focus:outline-none focus:ring-2
+                           focus:ring-blue-500"
                     required
-                    class="flex-1 border border-gray-300 rounded-lg px-4 py-3
-                           focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
+
+
+                <!-- DESCRIPTION -->
+
+                <textarea
+                    name="description"
+                    rows="3"
+                    placeholder="Enter task description"
+                    class="w-full border border-gray-300 rounded-lg
+                           px-4 py-3 mb-3
+                           focus:outline-none focus:ring-2
+                           focus:ring-blue-500"
+                >{{ old('description') }}</textarea>
+
+
+                <!-- PRIORITY -->
+
+                <select
+                    name="priority"
+                    class="w-full border border-gray-300 rounded-lg
+                           px-4 py-3 mb-4
+                           focus:outline-none focus:ring-2
+                           focus:ring-blue-500"
+                >
+
+                    <option value="medium" selected>
+                        Medium Priority
+                    </option>
+
+                    <option value="high">
+                        High Priority
+                    </option>
+
+                    <option value="low">
+                        Low Priority
+                    </option>
+
+                </select>
+
+
+                <!-- ADD BUTTON -->
 
                 <button
                     type="submit"
-                    class="bg-blue-600 text-white px-6 py-3 rounded-lg
+                    class="w-full bg-blue-600 text-white
+                           py-3 rounded-lg
                            hover:bg-blue-700 transition"
                 >
-                    Add
+                    Add Task
                 </button>
 
             </form>
@@ -62,95 +147,239 @@
         </div>
 
 
-        <!-- Todo List -->
 
-        <div class="bg-white rounded-xl shadow-sm p-5">
+        <!-- VALIDATION ERRORS -->
 
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">
-                My Tasks
-            </h2>
+        @if($errors->any())
 
+            <div class="bg-red-50 border border-red-200
+                        text-red-700 rounded-lg p-4 mb-6">
 
-            @if ($todos->count() > 0)
+                <ul class="list-disc ml-5">
 
-                <div class="space-y-3">
+                    @foreach($errors->all() as $error)
 
-                    @foreach ($todos as $todo)
+                        <li>{{ $error }}</li>
 
-                        <div
-                            class="flex items-center justify-between
-                                   border border-gray-200 rounded-lg
-                                   p-4 hover:bg-gray-50 transition"
-                        >
+                    @endforeach
 
-                            <span class="text-gray-700">
-                                {{ $todo->task }}
-                            </span>
+                </ul>
+
+            </div>
+
+        @endif
 
 
-                            <div class="flex gap-2">
 
-                                <!-- Edit -->
+        <!-- TASK LIST -->
+
+        <div class="space-y-4">
+
+
+            @forelse($todos as $todo)
+
+
+                <!-- TASK CARD -->
+
+                <div
+                    class="bg-white border border-gray-200
+                           rounded-xl p-5 shadow-sm
+                           hover:shadow-md transition"
+                >
+
+                    <div class="flex items-start justify-between gap-4">
+
+
+                        <!-- LEFT SIDE -->
+
+                        <div class="flex items-start gap-3 flex-1">
+
+
+                            <!-- CHECKBOX -->
+
+                            <form
+                                action="/todo/{{ $todo->id }}/complete"
+                                method="POST"
+                            >
+
+                                @csrf
+
+                                @method('PATCH')
+
+                                <input
+                                    type="checkbox"
+                                    onchange="this.form.submit()"
+                                    {{ $todo->is_completed ? 'checked' : '' }}
+                                    class="w-5 h-5 mt-1 cursor-pointer"
+                                >
+
+                            </form>
+
+
+
+                            <!-- TASK INFORMATION -->
+
+                            <a
+                                href="/todo/{{ $todo->id }}"
+                                class="flex-1"
+                            >
+
+                                <div>
+
+                                    <!-- TASK NAME -->
+
+                                    <h3
+                                        class="text-lg font-semibold
+                                        {{ $todo->is_completed
+                                            ? 'line-through text-gray-400'
+                                            : 'text-gray-800' }}"
+                                    >
+                                        {{ $todo->task }}
+                                    </h3>
+
+
+
+                                    <!-- PRIORITY -->
+
+                                    <span
+                                        class="inline-block mt-2
+                                               px-2.5 py-1 rounded-full
+                                               text-xs font-medium
+                                        {{ $todo->priority === 'high'
+                                            ? 'bg-red-100 text-red-700'
+                                            : ($todo->priority === 'medium'
+                                                ? 'bg-yellow-100 text-yellow-700'
+                                                : 'bg-green-100 text-green-700') }}"
+                                    >
+
+                                        {{ ucfirst($todo->priority) }}
+
+                                    </span>
+
+
+
+                                    <!-- COMPLETED DATE -->
+
+                                    @if($todo->is_completed && $todo->completed_at)
+
+                                        <p class="text-xs text-green-600 mt-2">
+
+                                            Done:
+                                            {{ $todo->completed_at->format('M d, Y h:i A') }}
+
+                                        </p>
+
+                                    @endif
+
+                                </div>
+
+                            </a>
+
+                        </div>
+
+
+
+                        <!-- BUTTONS -->
+
+                        <div class="flex gap-2">
+
+
+                            <!-- EDIT -->
+
+                            @if(!$todo->is_completed)
 
                                 <a
                                     href="/todo/{{ $todo->id }}/edit"
-                                    class="px-3 py-2 text-sm text-blue-600
-                                           border border-blue-200 rounded-lg
-                                           hover:bg-blue-50 transition"
+                                    class="px-3 py-2 text-sm
+                                           text-blue-600
+                                           border border-blue-200
+                                           rounded-lg
+                                           hover:bg-blue-50"
                                 >
                                     Edit
                                 </a>
 
+                            @endif
 
-                                <!-- Delete -->
 
-                                <form
-                                    action="/todo/{{ $todo->id }}"
-                                    method="POST"
+
+                            <!-- DELETE -->
+
+                            <form
+                                action="/todo/{{ $todo->id }}"
+                                method="POST"
+                                onsubmit="return confirm('Are you sure you want to delete this task?');"
+                            >
+
+                                @csrf
+
+                                @method('DELETE')
+
+                                <button
+                                    type="submit"
+                                    class="px-3 py-2 text-sm
+                                           text-red-600
+                                           border border-red-200
+                                           rounded-lg
+                                           hover:bg-red-50"
                                 >
+                                    Delete
+                                </button>
 
-                                    @csrf
-
-                                    @method('DELETE')
-
-                                    <button
-                                        type="submit"
-                                        class="px-3 py-2 text-sm text-red-600
-                                               border border-red-200 rounded-lg
-                                               hover:bg-red-50 transition"
-                                    >
-                                        Delete
-                                    </button>
-
-                                </form>
-
-                            </div>
+                            </form>
 
                         </div>
 
-                    @endforeach
+                    </div>
 
                 </div>
 
-            @else
 
-                <div class="text-center py-10">
+            @empty
 
-                    <p class="text-gray-400">
-                        No tasks yet.
-                    </p>
 
-                    <p class="text-gray-400 text-sm mt-1">
-                        Add your first task above.
-                    </p>
+                <!-- NO TASK -->
 
+                <div
+                    class="bg-white rounded-xl
+                           p-8 text-center text-gray-500"
+                >
+                    No tasks yet. Add your first task!
                 </div>
 
-            @endif
+
+            @endforelse
 
         </div>
 
     </div>
+
+
+
+    <!-- POPUP SCRIPT -->
+
+    <script>
+
+        setTimeout(function () {
+
+            const success = document.getElementById('success-message');
+
+            const error = document.getElementById('error-message');
+
+
+            if (success) {
+                success.remove();
+            }
+
+
+            if (error) {
+                error.remove();
+            }
+
+        }, 3000);
+
+    </script>
+
 
 </body>
 

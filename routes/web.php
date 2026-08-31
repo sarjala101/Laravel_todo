@@ -4,19 +4,31 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TodoController;
 
 Route::get('/', function () {
-    return view('/welcome');
+    return view('welcome');
 });
 
-Route::get('/todo', [TodoController::class, 'index']);
 
-Route::post('/todo', [TodoController::class, 'store']);
+/*
+|--------------------------------------------------------------------------
+| Todo Routes
+|--------------------------------------------------------------------------
+| Only authenticated users can access these routes.
+*/
 
-Route::get('/todo/{id}', [TodoController::class, 'show']);
+Route::middleware('auth')->group(function () {
 
-Route::get('/todo/{id}/edit', [TodoController::class, 'edit']);
+    Route::get('/todo', [TodoController::class, 'index']);
 
-Route::put('/todo/{id}', [TodoController::class, 'update']);
+    Route::post('/todo', [TodoController::class, 'store']);
 
-Route::patch('/todo/{id}/complete', [TodoController::class, 'complete']);
+    Route::get('/todo/{id}', [TodoController::class, 'show']);
 
-Route::delete('/todo/{id}', [TodoController::class, 'destroy']);
+    Route::get('/todo/{id}/edit', [TodoController::class, 'edit']);
+
+    Route::put('/todo/{id}', [TodoController::class, 'update']);
+
+    Route::patch('/todo/{id}/complete', [TodoController::class, 'complete']);
+
+    Route::delete('/todo/{id}', [TodoController::class, 'destroy']);
+
+});

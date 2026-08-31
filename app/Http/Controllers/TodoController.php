@@ -7,22 +7,29 @@ use Illuminate\Http\Request;
 
 class TodoController extends Controller
 {
-    // Show all todos
+    /**
+     * Show all todos belonging to the logged-in user.
+     */
     public function index()
     {
-        $todos = Todo::orderByRaw("
-            CASE priority
-                WHEN 'high' THEN 1
-                WHEN 'medium' THEN 2
-                WHEN 'low' THEN 3
-            END
-        ")->latest()->get();
+        $todos = Todo::where('user_id', auth()->id())
+            ->orderByRaw("
+                CASE priority
+                    WHEN 'high' THEN 1
+                    WHEN 'medium' THEN 2
+                    WHEN 'low' THEN 3
+                END
+            ")
+            ->latest()
+            ->get();
 
         return view('todo', compact('todos'));
     }
 
 
-    // Add new todo
+    /**
+     * Add a new todo for the logged-in user.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -32,6 +39,7 @@ class TodoController extends Controller
         ]);
 
         Todo::create([
+            'user_id' => auth()->id(),
             'task' => $request->task,
             'description' => $request->description,
             'priority' => $request->priority ?? 'medium',
@@ -42,19 +50,25 @@ class TodoController extends Controller
     }
 
 
-    // Show task details
+    /**
+     * Show task details.
+     */
     public function show($id)
     {
-        $todo = Todo::findOrFail($id);
+        $todo = Todo::where('user_id', auth()->id())
+            ->findOrFail($id);
 
         return view('todo-show', compact('todo'));
     }
 
 
-    // Show edit page
+    /**
+     * Show edit page.
+     */
     public function edit($id)
     {
-        $todo = Todo::findOrFail($id);
+        $todo = Todo::where('user_id', auth()->id())
+            ->findOrFail($id);
 
         // Completed task cannot be edited
         if ($todo->is_completed) {
@@ -66,10 +80,13 @@ class TodoController extends Controller
     }
 
 
-    // Update task
+    /**
+     * Update task.
+     */
     public function update(Request $request, $id)
     {
-        $todo = Todo::findOrFail($id);
+        $todo = Todo::where('user_id', auth()->id())
+            ->findOrFail($id);
 
         // Completed task cannot be edited
         if ($todo->is_completed) {
@@ -94,10 +111,13 @@ class TodoController extends Controller
     }
 
 
-    // Complete / uncomplete task
+    /**
+     * Complete / uncomplete task.
+     */
     public function complete($id)
     {
-        $todo = Todo::findOrFail($id);
+        $todo = Todo::where('user_id', auth()->id())
+            ->findOrFail($id);
 
         if ($todo->is_completed) {
 
@@ -118,10 +138,13 @@ class TodoController extends Controller
     }
 
 
-    // Delete task
+    /**
+     * Delete task.
+     */
     public function destroy($id)
     {
-        $todo = Todo::findOrFail($id);
+        $todo = Todo::where('user_id', auth()->id())
+            ->findOrFail($id);
 
         // Soft delete
         $todo->delete();

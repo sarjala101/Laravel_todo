@@ -10,6 +10,7 @@ class Todo extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'user_id',
         'task',
         'description',
         'priority',
@@ -21,4 +22,12 @@ class Todo extends Model
         'is_completed' => 'boolean',
         'completed_at' => 'datetime',
     ];
+
+    /**
+     * A todo belongs to one user.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

@@ -1,18 +1,44 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\TodoController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\RegisterController;
+
+
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/login');
 });
+
+
+/*
+|--------------------------------------------------------------------------
+| Authentication Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/login', [LoginController::class, 'showLogin']);
+
+Route::post('/login', [LoginController::class, 'login']);
+
+Route::get('/register', [RegisterController::class, 'showRegister']);
+
+Route::post('/register', [RegisterController::class, 'register']);
+
+Route::post('/logout', [LoginController::class, 'logout']);
 
 
 /*
 |--------------------------------------------------------------------------
 | Todo Routes
 |--------------------------------------------------------------------------
-| Only authenticated users can access these routes.
 */
 
 Route::middleware('auth')->group(function () {
@@ -32,3 +58,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/todo/{id}', [TodoController::class, 'destroy']);
 
 });
+

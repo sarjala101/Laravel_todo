@@ -49,15 +49,53 @@
     @endif
 
 
-
     <div class="max-w-3xl mx-auto px-4 py-10">
 
 
-        <!-- TITLE -->
+        <!-- HEADER -->
 
-        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">
-            My Todo List
-        </h1>
+        <div class="flex items-center justify-between mb-8">
+
+            <div>
+
+                <h1 class="text-3xl font-bold text-gray-800">
+                    My Todo List
+                </h1>
+
+                @auth
+
+                    <p class="text-gray-500 mt-1">
+                        Welcome, {{ auth()->user()->name }}
+                    </p>
+
+                @endauth
+
+            </div>
+
+
+            <!-- LOGOUT BUTTON -->
+
+            <form
+                action="/logout"
+                method="POST"
+            >
+
+                @csrf
+
+                <button
+                    type="submit"
+                    class="px-4 py-2
+                           bg-blue-600 text-white
+                           rounded-lg
+                           hover:bg-blue-700
+                           transition"
+                >
+                    Logout
+                </button>
+
+            </form>
+
+        </div>
 
 
 
@@ -362,9 +400,11 @@
 
         setTimeout(function () {
 
-            const success = document.getElementById('success-message');
+            const success =
+                document.getElementById('success-message');
 
-            const error = document.getElementById('error-message');
+            const error =
+                document.getElementById('error-message');
 
 
             if (success) {
@@ -384,3 +424,4 @@
 </body>
 
 </html>
+

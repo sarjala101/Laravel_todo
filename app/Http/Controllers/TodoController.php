@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Todo;
@@ -70,7 +69,6 @@ class TodoController extends Controller
         $todo = Todo::where('user_id', auth()->id())
             ->findOrFail($id);
 
-        // Completed task cannot be edited
         if ($todo->is_completed) {
             return redirect('/todo')
                 ->with('error', 'Completed tasks cannot be edited.');
@@ -88,7 +86,6 @@ class TodoController extends Controller
         $todo = Todo::where('user_id', auth()->id())
             ->findOrFail($id);
 
-        // Completed task cannot be edited
         if ($todo->is_completed) {
             return redirect('/todo')
                 ->with('error', 'Completed tasks cannot be edited.');
@@ -120,14 +117,11 @@ class TodoController extends Controller
             ->findOrFail($id);
 
         if ($todo->is_completed) {
-
             $todo->update([
                 'is_completed' => false,
                 'completed_at' => null,
             ]);
-
         } else {
-
             $todo->update([
                 'is_completed' => true,
                 'completed_at' => now(),
@@ -146,10 +140,10 @@ class TodoController extends Controller
         $todo = Todo::where('user_id', auth()->id())
             ->findOrFail($id);
 
-        // Soft delete
         $todo->delete();
 
         return redirect('/todo')
             ->with('success', 'Task deleted successfully!');
     }
 }
+

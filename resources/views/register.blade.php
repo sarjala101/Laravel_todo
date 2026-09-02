@@ -63,8 +63,7 @@
 
                     <label
                         for="name"
-                        class="block text-sm font-medium
-                               text-gray-700 mb-2"
+                        class="block text-sm font-medium text-gray-700 mb-2"
                     >
                         Name <span class="text-red-500">*</span>
                     </label>
@@ -99,8 +98,7 @@
 
                     <label
                         for="email"
-                        class="block text-sm font-medium
-                               text-gray-700 mb-2"
+                        class="block text-sm font-medium text-gray-700 mb-2"
                     >
                         Email <span class="text-red-500">*</span>
                     </label>
@@ -135,8 +133,7 @@
 
                     <label
                         for="password"
-                        class="block text-sm font-medium
-                               text-gray-700 mb-2"
+                        class="block text-sm font-medium text-gray-700 mb-2"
                     >
                         Password <span class="text-red-500">*</span>
                     </label>
@@ -170,8 +167,7 @@
 
                     <label
                         for="password_confirmation"
-                        class="block text-sm font-medium
-                               text-gray-700 mb-2"
+                        class="block text-sm font-medium text-gray-700 mb-2"
                     >
                         Confirm Password <span class="text-red-500">*</span>
                     </label>
@@ -270,9 +266,9 @@
 
 
         /*
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Helper functions
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         function showError(input, errorElement) {
@@ -319,24 +315,41 @@
 
 
         /*
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Name validation
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
-        function validateName() {
+        function validateName(showEmptyError = false) {
 
             const value = nameInput.value.trim();
 
             if (value.length === 0) {
 
-                showError(nameInput, nameError);
+                if (showEmptyError) {
+
+                    showError(
+                        nameInput,
+                        nameError
+                    );
+
+                } else {
+
+                    resetInput(
+                        nameInput,
+                        nameError
+                    );
+
+                }
 
                 return false;
 
             }
 
-            showValid(nameInput, nameError);
+            showValid(
+                nameInput,
+                nameError
+            );
 
             return true;
 
@@ -345,18 +358,32 @@
 
 
         /*
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Email validation
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
-        function validateEmail() {
+        function validateEmail(showEmptyError = false) {
 
             const value = emailInput.value.trim();
 
             if (value.length === 0) {
 
-                resetInput(emailInput, emailError);
+                if (showEmptyError) {
+
+                    showError(
+                        emailInput,
+                        emailError
+                    );
+
+                } else {
+
+                    resetInput(
+                        emailInput,
+                        emailError
+                    );
+
+                }
 
                 return false;
 
@@ -369,14 +396,20 @@
 
             if (!emailPattern.test(value)) {
 
-                showError(emailInput, emailError);
+                showError(
+                    emailInput,
+                    emailError
+                );
 
                 return false;
 
             }
 
 
-            showValid(emailInput, emailError);
+            showValid(
+                emailInput,
+                emailError
+            );
 
             return true;
 
@@ -385,21 +418,32 @@
 
 
         /*
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Password validation
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
-        function validatePassword() {
+        function validatePassword(showEmptyError = false) {
 
             const value = passwordInput.value;
 
             if (value.length === 0) {
 
-                resetInput(
-                    passwordInput,
-                    passwordError
-                );
+                if (showEmptyError) {
+
+                    showError(
+                        passwordInput,
+                        passwordError
+                    );
+
+                } else {
+
+                    resetInput(
+                        passwordInput,
+                        passwordError
+                    );
+
+                }
 
                 return false;
 
@@ -438,12 +482,12 @@
 
 
         /*
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Confirm password validation
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
-        function validateConfirmPassword() {
+        function validateConfirmPassword(showEmptyError = false) {
 
             const password =
                 passwordInput.value;
@@ -454,10 +498,21 @@
 
             if (confirmation.length === 0) {
 
-                resetInput(
-                    confirmPasswordInput,
-                    confirmPasswordError
-                );
+                if (showEmptyError) {
+
+                    showError(
+                        confirmPasswordInput,
+                        confirmPasswordError
+                    );
+
+                } else {
+
+                    resetInput(
+                        confirmPasswordInput,
+                        confirmPasswordError
+                    );
+
+                }
 
                 return false;
 
@@ -488,71 +543,82 @@
 
 
         /*
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Validate while typing
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         nameInput.addEventListener(
             'input',
-            validateName
+            function () {
+                validateName();
+            }
         );
 
 
         emailInput.addEventListener(
             'input',
-            validateEmail
+            function () {
+                validateEmail();
+            }
         );
 
 
         passwordInput.addEventListener(
             'input',
-            validatePassword
+            function () {
+                validatePassword();
+            }
         );
 
 
         confirmPasswordInput.addEventListener(
             'input',
-            validateConfirmPassword
+            function () {
+                validateConfirmPassword();
+            }
         );
 
 
 
         /*
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Final browser-side validation
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         document
             .getElementById('register-form')
-            .addEventListener('submit', function(event) {
+            .addEventListener(
+                'submit',
+                function (event) {
 
-                const nameValid =
-                    validateName();
+                    const nameValid =
+                        validateName(true);
 
-                const emailValid =
-                    validateEmail();
+                    const emailValid =
+                        validateEmail(true);
 
-                const passwordValid =
-                    validatePassword();
+                    const passwordValid =
+                        validatePassword(true);
 
-                const confirmPasswordValid =
-                    validateConfirmPassword();
+                    const confirmPasswordValid =
+                        validateConfirmPassword(true);
 
 
-                if (
-                    !nameValid ||
-                    !emailValid ||
-                    !passwordValid ||
-                    !confirmPasswordValid
-                ) {
+                    if (
+                        !nameValid ||
+                        !emailValid ||
+                        !passwordValid ||
+                        !confirmPasswordValid
+                    ) {
 
-                    event.preventDefault();
+                        event.preventDefault();
+
+                    }
 
                 }
-
-            });
+            );
 
     </script>
 

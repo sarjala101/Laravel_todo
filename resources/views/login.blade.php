@@ -5,7 +5,10 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Login - Todo App</title>
 
@@ -15,6 +18,11 @@
 
 
 <body class="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+
+
+    <!-- TOAST MESSAGES -->
+
+    @include('components.toast')
 
 
     <div class="w-full max-w-md">
@@ -36,62 +44,6 @@
                 </p>
 
             </div>
-
-
-            <!-- SUCCESS MESSAGE -->
-
-            @if(session('success'))
-
-                <div
-                    id="success-message"
-                    class="fixed top-5 right-5 z-50
-                           bg-green-600 text-white
-                           px-5 py-3 rounded-lg shadow-lg"
-                >
-                    ✓ {{ session('success') }}
-                </div>
-
-            @endif
-
-
-            <!-- ERROR MESSAGE -->
-
-            @if(session('error'))
-
-                <div
-                    id="error-message"
-                    class="fixed top-5 right-5 z-50
-                           bg-red-600 text-white
-                           px-5 py-3 rounded-lg shadow-lg"
-                >
-                    {{ session('error') }}
-                </div>
-
-            @endif
-
-
-            <!-- VALIDATION ERRORS -->
-
-            @if($errors->any())
-
-                <div
-                    class="bg-red-50 border border-red-200
-                           text-red-700 rounded-lg p-3 mb-5"
-                >
-
-                    <ul class="list-disc ml-5">
-
-                        @foreach($errors->all() as $error)
-
-                            <li>{{ $error }}</li>
-
-                        @endforeach
-
-                    </ul>
-
-                </div>
-
-            @endif
 
 
             <!-- LOGIN FORM -->
@@ -202,34 +154,6 @@
     </div>
 
 
-    <!-- AUTO-HIDE MESSAGES -->
-
-    <script>
-
-        setTimeout(function () {
-
-            const success =
-                document.getElementById('success-message');
-
-            const error =
-                document.getElementById('error-message');
-
-
-            if (success) {
-                success.remove();
-            }
-
-
-            if (error) {
-                error.remove();
-            }
-
-        }, 3000);
-
-    </script>
-
-
 </body>
 
 </html>
-

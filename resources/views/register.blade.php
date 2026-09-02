@@ -5,7 +5,10 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Register - Todo App</title>
 
@@ -15,6 +18,11 @@
 
 
 <body class="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+
+
+    <!-- TOAST MESSAGES -->
+
+    @include('components.toast')
 
 
     <div class="w-full max-w-md">
@@ -37,30 +45,6 @@
             </div>
 
 
-            <!-- SERVER VALIDATION ERRORS -->
-
-            @if($errors->any())
-
-                <div
-                    class="bg-red-50 border border-red-200
-                           text-red-700 rounded-lg p-3 mb-5"
-                >
-
-                    <ul class="list-disc ml-5">
-
-                        @foreach($errors->all() as $error)
-
-                            <li>{{ $error }}</li>
-
-                        @endforeach
-
-                    </ul>
-
-                </div>
-
-            @endif
-
-
             <!-- REGISTER FORM -->
 
             <form
@@ -79,7 +63,8 @@
 
                     <label
                         for="name"
-                        class="block text-sm font-medium text-gray-700 mb-2"
+                        class="block text-sm font-medium
+                               text-gray-700 mb-2"
                     >
                         Name <span class="text-red-500">*</span>
                     </label>
@@ -114,7 +99,8 @@
 
                     <label
                         for="email"
-                        class="block text-sm font-medium text-gray-700 mb-2"
+                        class="block text-sm font-medium
+                               text-gray-700 mb-2"
                     >
                         Email <span class="text-red-500">*</span>
                     </label>
@@ -149,7 +135,8 @@
 
                     <label
                         for="password"
-                        class="block text-sm font-medium text-gray-700 mb-2"
+                        class="block text-sm font-medium
+                               text-gray-700 mb-2"
                     >
                         Password <span class="text-red-500">*</span>
                     </label>
@@ -183,7 +170,8 @@
 
                     <label
                         for="password_confirmation"
-                        class="block text-sm font-medium text-gray-700 mb-2"
+                        class="block text-sm font-medium
+                               text-gray-700 mb-2"
                     >
                         Confirm Password <span class="text-red-500">*</span>
                     </label>
@@ -280,10 +268,11 @@
             document.getElementById('confirm-password-error');
 
 
+
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         | Helper functions
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
 
         function showError(input, errorElement) {
@@ -328,10 +317,11 @@
         }
 
 
+
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         | Name validation
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
 
         function validateName() {
@@ -349,23 +339,20 @@
             showValid(nameInput, nameError);
 
             return true;
+
         }
 
 
+
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         | Email validation
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
 
         function validateEmail() {
 
             const value = emailInput.value.trim();
-
-            /*
-             * Don't show an error when the field is completely empty.
-             * The required-field validation will handle that.
-             */
 
             if (value.length === 0) {
 
@@ -375,10 +362,6 @@
 
             }
 
-
-            /*
-             * Basic email format validation.
-             */
 
             const emailPattern =
                 /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -396,13 +379,15 @@
             showValid(emailInput, emailError);
 
             return true;
+
         }
 
 
+
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         | Password validation
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
 
         function validatePassword() {
@@ -439,11 +424,6 @@
             );
 
 
-            /*
-             * Also check confirm password because
-             * the password has changed.
-             */
-
             if (confirmPasswordInput.value.length > 0) {
 
                 validateConfirmPassword();
@@ -452,13 +432,15 @@
 
 
             return true;
+
         }
 
 
+
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         | Confirm password validation
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
 
         function validateConfirmPassword() {
@@ -500,13 +482,15 @@
             );
 
             return true;
+
         }
 
 
+
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         | Validate while typing
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
 
         nameInput.addEventListener(
@@ -533,28 +517,25 @@
         );
 
 
+
         /*
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         | Final browser-side validation
-        |--------------------------------------------------------------------------
+        |----------------------------------------------------------------------
         */
 
         document
             .getElementById('register-form')
             .addEventListener('submit', function(event) {
 
-
                 const nameValid =
                     validateName();
-
 
                 const emailValid =
                     validateEmail();
 
-
                 const passwordValid =
                     validatePassword();
-
 
                 const confirmPasswordValid =
                     validateConfirmPassword();
@@ -579,4 +560,3 @@
 </body>
 
 </html>
-

@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 //text: 'This task will be moved to the trash.',
                 icon: 'warning',
                 iconColor: '#dc2626',
+                draggable: true,
 
                 width: '400px',
 

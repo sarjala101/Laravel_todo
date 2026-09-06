@@ -5,7 +5,10 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>My Todo List</title>
 
@@ -17,53 +20,69 @@
 <body class="min-h-screen bg-gray-100">
 
 
-    <!-- SUCCESS POPUP -->
+    <!-- TOAST MESSAGES -->
 
-    @if(session('success'))
-
-        <div
-            id="success-message"
-            class="fixed top-5 right-5 z-50
-                   bg-green-600 text-white
-                   px-5 py-3 rounded-lg shadow-lg"
-        >
-            ✓ {{ session('success') }}
-        </div>
-
-    @endif
-
-
-    <!-- ERROR POPUP -->
-
-    @if(session('error'))
-
-        <div
-            id="error-message"
-            class="fixed top-5 right-5 z-50
-                   bg-red-600 text-white
-                   px-5 py-3 rounded-lg shadow-lg"
-        >
-            {{ session('error') }}
-        </div>
-
-    @endif
-
+    @include('components.toast')
 
 
     <div class="max-w-3xl mx-auto px-4 py-10">
 
 
-        <!-- TITLE -->
+        <!-- HEADER -->
 
-        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">
-            My Todo List
-        </h1>
+        <div class="flex items-center justify-between mb-8">
+
+
+            <div>
+
+                <h1 class="text-3xl font-bold text-gray-800">
+                    My Todo List
+                </h1>
+
+
+                @auth
+
+                    <p class="text-gray-500 mt-1">
+                        Welcome, {{ auth()->user()->name }}
+                    </p>
+
+                @endauth
+
+            </div>
+
+
+
+            <!-- LOGOUT BUTTON -->
+
+            <form
+                action="/logout"
+                method="POST"
+            >
+
+                @csrf
+
+                <button
+                    type="submit"
+                    class="px-4 py-2
+                           bg-blue-600 text-white
+                           rounded-lg
+                           hover:bg-blue-700
+                           transition"
+                >
+                    Logout
+                </button>
+
+            </form>
+
+
+        </div>
 
 
 
         <!-- ADD TASK FORM -->
 
         <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+
 
             <h2 class="text-xl font-semibold text-gray-800 mb-4">
                 Add New Task
@@ -144,30 +163,12 @@
 
             </form>
 
+
         </div>
 
 
 
-        <!-- VALIDATION ERRORS -->
-
-        @if($errors->any())
-
-            <div class="bg-red-50 border border-red-200
-                        text-red-700 rounded-lg p-4 mb-6">
-
-                <ul class="list-disc ml-5">
-
-                    @foreach($errors->all() as $error)
-
-                        <li>{{ $error }}</li>
-
-                    @endforeach
-
-                </ul>
-
-            </div>
-
-        @endif
+        <!-- VALIDATION ERRORS ARE NOW TOASTS -->
 
 
 
@@ -186,6 +187,7 @@
                            rounded-xl p-5 shadow-sm
                            hover:shadow-md transition"
                 >
+
 
                     <div class="flex items-start justify-between gap-4">
 
@@ -226,6 +228,7 @@
 
                                 <div>
 
+
                                     <!-- TASK NAME -->
 
                                     <h3
@@ -251,9 +254,7 @@
                                                 ? 'bg-yellow-100 text-yellow-700'
                                                 : 'bg-green-100 text-green-700') }}"
                                     >
-
                                         {{ ucfirst($todo->priority) }}
-
                                     </span>
 
 
@@ -271,9 +272,11 @@
 
                                     @endif
 
+
                                 </div>
 
                             </a>
+
 
                         </div>
 
@@ -308,7 +311,7 @@
                             <form
                                 action="/todo/{{ $todo->id }}"
                                 method="POST"
-                                onsubmit="return confirm('Are you sure you want to delete this task?');"
+                                class="delete-form"
                             >
 
                                 @csrf
@@ -328,9 +331,12 @@
 
                             </form>
 
+
                         </div>
 
+
                     </div>
+
 
                 </div>
 
@@ -350,35 +356,11 @@
 
             @endforelse
 
+
         </div>
 
+
     </div>
-
-
-
-    <!-- POPUP SCRIPT -->
-
-    <script>
-
-        setTimeout(function () {
-
-            const success = document.getElementById('success-message');
-
-            const error = document.getElementById('error-message');
-
-
-            if (success) {
-                success.remove();
-            }
-
-
-            if (error) {
-                error.remove();
-            }
-
-        }, 3000);
-
-    </script>
 
 
 </body>

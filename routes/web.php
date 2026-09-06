@@ -56,6 +56,9 @@ Route::post('/forgot-password', [ForgetPasswordManager::class, 'sendResetLink'])
 Route::get('/reset-password/{token}', [ForgetPasswordManager::class, 'resetPassword'])
     ->name('password.reset');
 
+Route::post('/reset-password', [ForgetPasswordManager::class, 'updatePassword'])
+    ->name('password.update');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -63,7 +66,7 @@ Route::get('/reset-password/{token}', [ForgetPasswordManager::class, 'resetPassw
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function () {
+            Route::middleware('auth')->group(function () {
 
     Route::get('/todo', [TodoController::class, 'index'])
         ->name('todo.index');

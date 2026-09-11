@@ -6,31 +6,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     */
     protected function casts(): array
     {
         return [
@@ -39,12 +32,50 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * A user can have many todos.
-     */
-    public function todos()
+    /*
+    |--------------------------------------------------------------------------
+    | Todo Relationship
+    |--------------------------------------------------------------------------
+    */
+
+    public function todos(): HasMany
     {
         return $this->hasMany(Todo::class);
     }
-}
 
+    /*
+    |--------------------------------------------------------------------------
+    | Profile Relationships
+    |--------------------------------------------------------------------------
+    */
+
+    public function profile(): HasOne
+    {
+        return $this->hasOne(UserProfile::class);
+    }
+
+    public function skills(): HasMany
+    {
+        return $this->hasMany(Skill::class);
+    }
+
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
+
+    public function achievements(): HasMany
+    {
+        return $this->hasMany(Achievement::class);
+    }
+
+    public function courseworks(): HasMany
+    {
+        return $this->hasMany(Coursework::class);
+    }
+
+    public function interests(): HasMany
+    {
+        return $this->hasMany(Interest::class);
+    }
+}

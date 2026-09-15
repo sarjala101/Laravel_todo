@@ -7,7 +7,8 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ForgetPasswordManager;
 
-
+//for livewire
+Route::livewire('/livewire-todo', 'todo-list');
 /*
 |--------------------------------------------------------------------------
 | Public Routes
@@ -66,7 +67,7 @@ Route::post('/reset-password', [ForgetPasswordManager::class, 'updatePassword'])
 |--------------------------------------------------------------------------
 */
 
-            Route::middleware('auth')->group(function () {
+Route::middleware('auth')->group(function () {
 
     Route::get('/todo', [TodoController::class, 'index'])
         ->name('todo.index');

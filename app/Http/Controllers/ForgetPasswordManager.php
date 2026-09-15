@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Hash;
 
-            class ForgetPasswordManager extends Controller
+class ForgetPasswordManager extends Controller
 {
     public function forgetPassword()
     {

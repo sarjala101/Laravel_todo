@@ -99,7 +99,63 @@ new class extends Component
 
         $this->showCreateForm = false;
 
-        session()->flash('success', 'Task added successfully!');
+        $this->dispatch(
+        'show-toast',
+        type: 'success',
+        message: 'Task added successfully!'
+        );
+    }
+
+
+    public function toggleComplete($todoId)
+{
+    $todo = auth()->user()->todos()->findOrFail($todoId);
+
+    if ($todo->is_completed) {
+
+        $todo->update([
+            'is_completed' => false,
+            'completed_at' => null,
+        ]);
+
+        $this->dispatch(
+            'show-toast',
+            type: 'info',
+            message: 'Task marked as pending!'
+        );
+
+    } else {
+
+        $todo->update([
+            'is_completed' => true,
+            'completed_at' => now(),
+        ]);
+
+        $this->dispatch(
+            'show-toast',
+            type: 'success',
+            message: 'Task completed successfully!'
+        );
+
+    }
+}
+
+    public function deleteTodo($todoId)
+{
+    $todo = auth()->user()->todos()->findOrFail($todoId);
+
+    $todo->delete();
+
+    $this->dispatch(
+        'show-toast',
+        type: 'success',
+        message: 'Task deleted successfully!'
+    );
+}
+
+    public function confirmDelete($todoId)
+    {
+    $this->dispatch('confirm-delete', todoId: $todoId);
     }
 
 
@@ -211,29 +267,6 @@ new class extends Component
 
             <p class="mt-1 text-sm text-gray-500">Manage your tasks with Livewire</p>
         </div>
-
-        {{-- Success Toast --}}
-        @if (session()->has('success'))
-            <div
-                x-data="{ show: true }"
-                x-init="setTimeout(() => (show = false), 3000)"
-                x-show="show"
-                x-transition
-                class="fixed top-5 right-5 z-50 flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm text-white shadow-lg"
-            >
-                <span class="font-medium"> ✓ </span>
-
-                <span> {{ session('success') }} </span>
-
-                <button
-                    @click="show = false"
-                    class="ml-1 text-lg leading-none hover:text-green-200"
-                >
-                    ×
-                </button>
-            </div>
-
-        @endif
 
         {{-- Filters --}}
         <div class="mb-5 rounded-xl bg-white p-4 shadow-sm">
@@ -362,7 +395,7 @@ new class extends Component
 
                             <input
                                 type="text"
-                                wire:model="task"
+                                wire:model.live="task"
                                 placeholder="Enter task name"
                                 class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none"
                             />
@@ -419,9 +452,17 @@ new class extends Component
                         {{-- Submit --}}
                         <button
                             type="submit"
-                            class="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700"
+                            wire:loading.attr="disabled"
+                            wire:target="saveTodo"
+                            class="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            Add Task
+                            <span wire:loading.remove wire:target="saveTodo">
+                                Add Task
+                            </span>
+
+                            <span wire:loading wire:target="saveTodo">
+                                Adding...
+                            </span>
                         </button>
                     </form>
                 </div>
@@ -439,17 +480,17 @@ new class extends Component
                         <div class="flex flex-1 items-start gap-3">
                             <input
                                 type="checkbox"
+                                wire:click="toggleComplete({{ $todo->id }})"
                                 {{ $todo->is_completed ? 'checked' : '' }}
-                                disabled
-                                class="mt-1 h-4 w-4"
+                                class="mt-1 h-4 w-4 cursor-pointer"
                             />
 
                             <div class="flex-1">
                                 <h3
                                     class="text-base font-semibold
-                                    {{ $todo->is_completed
-                                        ? 'text-gray-400 line-through'
-                                        : 'text-gray-800' }}"
+                {{ $todo->is_completed
+                    ? 'text-gray-400 line-through'
+                    : 'text-gray-800' }}"
                                 >
                                     {{ $todo->task }}
                                 </h3>
@@ -458,16 +499,15 @@ new class extends Component
                                     <p class="mt-1 text-sm text-gray-600">
                                         {{ $todo->description }}
                                     </p>
-
                                 @endif
 
                                 <span
                                     class="mt-2 inline-block rounded-full px-2 py-1 text-xs font-medium
-                                    {{ $todo->priority === 'high'
-                                        ? 'bg-red-100 text-red-700'
-                                        : ($todo->priority === 'medium'
-                                            ? 'bg-yellow-100 text-yellow-700'
-                                            : 'bg-green-100 text-green-700') }}"
+                {{ $todo->priority === 'high'
+                    ? 'bg-red-100 text-red-700'
+                    : ($todo->priority === 'medium'
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-green-100 text-green-700') }}"
                                 >
                                     {{ ucfirst($todo->priority) }}
                                 </span>
@@ -476,9 +516,41 @@ new class extends Component
                                     <p class="mt-1 text-xs text-green-600">
                                         Done: {{ $todo->completed_at->format('M d, Y h:i A') }}
                                     </p>
-
                                 @endif
                             </div>
+                        </div>
+
+                        {{-- Edit button --}}
+
+                        <div class="flex items-center gap-2">
+                            @if (!$todo->is_completed)
+                                <a
+                                    href="{{ route('livewire.todo.edit', $todo) }}"
+                                    class="rounded-lg border border-blue-200 px-3 py-1.5 text-sm font-medium text-blue-600 transition hover:bg-blue-50"
+                                >
+                                    Edit
+                                </a>
+
+                            @endif
+
+                            <button
+                                type="button"
+                                wire:click="confirmDelete({{ $todo->id }})"
+                                wire:loading.attr="disabled"
+                                wire:target="deleteTodo"
+                                class="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <span
+                                    wire:loading.remove
+                                    wire:target="deleteTodo"
+                                >
+                                    Delete
+                                </span>
+
+                                <span wire:loading wire:target="deleteTodo">
+                                    Deleting...
+                                </span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -495,3 +567,41 @@ new class extends Component
         <div class="mt-5">{{ $todos->links() }}</div>
     </div>
 </div>
+
+{{--//for sweetalert--}}
+@script
+    <script>
+        $wire.on("confirm-delete", (event) => {
+            Swal.fire({
+                title: "Delete this task?",
+                icon: "warning",
+                iconColor: "#dc2626",
+                draggable: true,
+
+                width: "400px",
+
+                showCancelButton: true,
+                confirmButtonText: "Yes, delete it",
+                cancelButtonText: "Cancel",
+
+                showClass: {
+                    popup: "",
+                },
+                hideClass: {
+                    popup: "",
+                },
+
+                background: "#ffffff",
+                color: "#1f2937",
+
+                confirmButtonColor: "#aa0000",
+                cancelButtonColor: "#6b7280",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $wire.deleteTodo(event.todoId);
+                }
+            });
+        });
+    </script>
+
+@endscript

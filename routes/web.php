@@ -9,7 +9,13 @@ use App\Http\Controllers\ForgetPasswordManager;
 
 //for livewire
 Route::middleware('auth')->group(function () {
-    Route::livewire('/livewire-todo', 'todo-list');
+
+    Route::livewire('/livewire-todo', 'todo-list')
+        ->name('livewire.todo');
+
+    Route::livewire('/livewire-todo/{todo}/edit', 'todo-edit')
+        ->name('livewire.todo.edit');
+
 });
 /*
 |--------------------------------------------------------------------------

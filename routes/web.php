@@ -7,11 +7,35 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ForgetPasswordManager;
 
-//for livewire
+/*
+|--------------------------------------------------------------------------
+| Livewire Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('guest')->group(function () {
+
+    Route::livewire('/livewire-login', 'login')
+        ->name('livewire.login');
+
+    Route::livewire('/livewire-register', 'register')
+        ->name('livewire.register');
+
+    Route::livewire('/livewire-forgot-password', 'forgot-password')
+        ->name('password.request');
+
+    Route::livewire('/livewire-reset-password/{token}', 'reset-password')
+        ->name('password.reset');
+
+});
+
 Route::middleware('auth')->group(function () {
 
     Route::livewire('/livewire-todo', 'todo-list')
         ->name('livewire.todo');
+
+    Route::livewire('/livewire-todo/{todo}', 'todo-show')
+        ->name('livewire.todo.show');
 
     Route::livewire('/livewire-todo/{todo}/edit', 'todo-edit')
         ->name('livewire.todo.edit');
@@ -21,13 +45,6 @@ Route::middleware('auth')->group(function () {
 
 });
 
-
-Route::middleware('guest')->group(function () {
-
-    Route::livewire('/livewire-login', 'login')
-        ->name('livewire.login');
-
-});
 /*
 |--------------------------------------------------------------------------
 | Public Routes
@@ -86,7 +103,7 @@ Route::post('/reset-password', [ForgetPasswordManager::class, 'updatePassword'])
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function () {
+            Route::middleware('auth')->group(function () {
 
     Route::get('/todo', [TodoController::class, 'index'])
         ->name('todo.index');

@@ -1,20 +1,27 @@
 <?php
 
-use App\Models\Todo;
+//use App\Livewire\Concerns\HasTaskRules;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 new class extends Component
 {
+   // use HasTaskRules;
     use WithPagination;
 
+    #[Url(as: 'q')]
     public $search = '';
 
+    #[Url]
     public $status = 'all';
 
+    #[Url]
     public $priority = 'all';
 
+    #[Url]
     public $sort = 'newest';
 
     public $task = '';
@@ -24,13 +31,6 @@ new class extends Component
     public $taskPriority = 'medium';
 
     public $showCreateForm = false;
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Reset pagination when filters change
-    |--------------------------------------------------------------------------
-    */
 
     public function updatedSearch()
     {
@@ -52,57 +52,43 @@ new class extends Component
         $this->resetPage();
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Show / Hide Create Form
-    |--------------------------------------------------------------------------
-    */
-
     public function toggleCreateForm()
     {
         $this->showCreateForm = ! $this->showCreateForm;
 
         if (! $this->showCreateForm) {
-            $this->resetValidation();
-
-            $this->reset([
-                'task',
-                'description',
-            ]);
-
-            $this->taskPriority = 'medium';
+            $this->resetCreateForm();
         }
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Save Todo
-    |--------------------------------------------------------------------------
-    */
-
-    public function saveTodo()
+    private function resetCreateForm()
     {
-        $this->validate([
-            'task' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'taskPriority' => 'required|in:high,medium,low',
-        ]);
-
-        auth()->user()->todos()->create([
-            'task' => $this->task,
-            'description' => $this->description,
-            'priority' => $this->taskPriority,
-        ]);
-
         $this->reset([
             'task',
             'description',
         ]);
 
         $this->taskPriority = 'medium';
+        $this->resetValidation();
+    }
 
+    public function saveTodo()
+    {
+        $this->validate([
+    'task' => ['required', 'string', 'max:255'],
+    'description' => ['nullable', 'string'],
+    'taskPriority' => ['required', 'in:high,medium,low'],
+]);
+
+        Auth::user()->todos()->create([
+            'task' => $this->task,
+            'description' => $this->description,
+            'priority' => $this->taskPriority,
+            'is_completed' => false,
+            'completed_at' => null,
+        ]);
+
+        $this->resetCreateForm();
         $this->showCreateForm = false;
 
         $this->dispatch(
@@ -112,71 +98,29 @@ new class extends Component
         );
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Toggle Complete / Pending
-    |--------------------------------------------------------------------------
-    */
-
     public function toggleComplete($todoId)
     {
-        $todo = auth()->user()->todos()->findOrFail($todoId);
+        $todo = Auth::user()
+            ->todos()
+            ->findOrFail($todoId);
 
-        if ($todo->is_completed) {
+        $todo->update([
+            'is_completed' => ! $todo->is_completed,
+            'completed_at' => ! $todo->is_completed
+                ? now()
+                : null,
+        ]);
 
-            $todo->update([
-                'is_completed' => false,
-                'completed_at' => null,
-            ]);
-
-            $this->dispatch(
-                'show-toast',
-                type: 'info',
-                message: 'Task marked as pending!'
-            );
-
-        } else {
-
-            $todo->update([
-                'is_completed' => true,
-                'completed_at' => now(),
-            ]);
-
-            $this->dispatch(
-                'show-toast',
-                type: 'success',
-                message: 'Task completed successfully!'
-            );
-        }
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Delete Todo
-    |--------------------------------------------------------------------------
-    */
-
-    public function deleteTodo($todoId)
-    {
-        $todo = auth()->user()->todos()->findOrFail($todoId);
-
-        $todo->delete();
+        $message = $todo->is_completed
+            ? 'Task completed successfully!'
+            : 'Task marked as pending!';
 
         $this->dispatch(
             'show-toast',
             type: 'success',
-            message: 'Task deleted successfully!'
+            message: $message
         );
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Delete Confirmation
-    |--------------------------------------------------------------------------
-    */
 
     public function confirmDelete($todoId)
     {
@@ -186,12 +130,20 @@ new class extends Component
         );
     }
 
+    public function deleteTodo($todoId)
+    {
+        $todo = Auth::user()
+            ->todos()
+            ->findOrFail($todoId);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Logout
-    |--------------------------------------------------------------------------
-    */
+        $todo->delete();
+
+        $this->dispatch(
+            'show-toast',
+            type: 'success',
+            message: 'Task deleted successfully!'
+        );
+    }
 
     public function logout()
     {
@@ -208,143 +160,65 @@ new class extends Component
         return redirect()->route('livewire.login');
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Todo List
-    |--------------------------------------------------------------------------
-    */
-
-    public function render()
+    #[Computed]
+    public function todos()
     {
-        $query = auth()->user()->todos();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Search
-        |--------------------------------------------------------------------------
-        */
-
-        if ($this->search) {
-            $query->where(function ($q) {
-
-                $q->where(
-                    'task',
-                    'like',
-                    '%' . $this->search . '%'
-                )->orWhere(
-                    'description',
-                    'like',
-                    '%' . $this->search . '%'
+        return Auth::user()
+            ->todos()
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('task', 'like', '%' . $this->search . '%')
+                        ->orWhere(
+                            'description',
+                            'like',
+                            '%' . $this->search . '%'
+                        );
+                });
+            })
+            ->when($this->status !== 'all', function ($query) {
+                $query->where(
+                    'is_completed',
+                    $this->status === 'completed'
                 );
-
-            });
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Status Filter
-        |--------------------------------------------------------------------------
-        */
-
-        if ($this->status === 'completed') {
-
-            $query->where('is_completed', true);
-
-        } elseif ($this->status === 'pending') {
-
-            $query->where('is_completed', false);
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Priority Filter
-        |--------------------------------------------------------------------------
-        */
-
-        if ($this->priority !== 'all') {
-
-            $query->where(
-                'priority',
-                $this->priority
-            );
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Sorting
-        |--------------------------------------------------------------------------
-        */
-
-        if ($this->sort === 'newest') {
-
-            $query->latest();
-
-        } elseif ($this->sort === 'oldest') {
-
-            $query->oldest();
-
-        } elseif ($this->sort === 'high') {
-
-            $query->orderByRaw("
-                CASE priority
-                    WHEN 'high' THEN 1
-                    WHEN 'medium' THEN 2
-                    WHEN 'low' THEN 3
-                END
-            ");
-
-        } elseif ($this->sort === 'low') {
-
-            $query->orderByRaw("
-                CASE priority
-                    WHEN 'low' THEN 1
-                    WHEN 'medium' THEN 2
-                    WHEN 'high' THEN 3
-                END
-            ");
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Pagination
-        |--------------------------------------------------------------------------
-        */
-
-        $todos = $query->paginate(5);
-
-        return $this->view([
-            'todos' => $todos,
-        ]);
+            })
+            ->when($this->priority !== 'all', function ($query) {
+                $query->where(
+                    'priority',
+                    $this->priority
+                );
+            })
+            ->when($this->sort === 'newest', function ($query) {
+                $query->latest();
+            })
+            ->when($this->sort === 'oldest', function ($query) {
+                $query->oldest();
+            })
+            ->when($this->sort === 'high', function ($query) {
+                $query->orderByRaw("
+                    CASE priority
+                        WHEN 'high' THEN 1
+                        WHEN 'medium' THEN 2
+                        WHEN 'low' THEN 3
+                    END
+                ");
+            })
+            ->when($this->sort === 'low', function ($query) {
+                $query->orderByRaw("
+                    CASE priority
+                        WHEN 'low' THEN 1
+                        WHEN 'medium' THEN 2
+                        WHEN 'high' THEN 3
+                    END
+                ");
+            })
+            ->paginate(5);
     }
 };
 ?>
 
 <div class="min-h-screen bg-gray-100 py-8">
-    <div class="mx-auto max-w-4xl px-4">
-        {{-- ================================================================
-             Toast From Session
-             This MUST stay INSIDE the single root element.
-        ================================================================= --}}
-
-        @if (session()->has('toast'))
-            <div
-                data-toast
-                data-toast-type="{{ session('toast.type') }}"
-                data-toast-message="{{ session('toast.message') }}"
-                class="hidden"
-            ></div>
-        @endif
-
-        {{-- ================================================================
-             Page Header
-        ================================================================= --}}
-
+    <div class="mx-auto max-w-6xl px-4">
+        {{-- Header --}}
         <div class="mb-6 flex items-center justify-between">
             <div>
                 <h1 class="text-3xl font-bold text-gray-800">
@@ -353,8 +227,6 @@ new class extends Component
 
                 <p class="mt-1 text-sm text-gray-500">Manage your tasks with Livewire</p>
             </div>
-
-            {{-- Profile + Logout --}}
 
             <div class="flex items-center gap-2">
                 <a
@@ -369,7 +241,7 @@ new class extends Component
                     wire:click="logout"
                     wire:loading.attr="disabled"
                     wire:target="logout"
-                    class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     <span wire:loading.remove wire:target="logout">
                         Logout
@@ -382,16 +254,12 @@ new class extends Component
             </div>
         </div>
 
-        {{-- ================================================================
-             Filters
-        ================================================================= --}}
-
-        <div class="mb-5 rounded-xl bg-white p-4 shadow-sm">
-            <div class="grid grid-cols-1 gap-3 sm:grid-cols-4">
+        {{-- Search / Filters --}}
+        <div class="mb-6 rounded-xl bg-white p-4 shadow-sm">
+            <div class="grid gap-4 md:grid-cols-4">
                 {{-- Search --}}
-
-                <div>
-                    <label class="mb-1 block text-xs font-medium text-gray-600">
+                <div class="md:col-span-2">
+                    <label class="mb-1 block text-sm font-medium text-gray-700">
                         Search
                     </label>
 
@@ -399,20 +267,19 @@ new class extends Component
                         type="text"
                         wire:model.live.debounce.300ms="search"
                         placeholder="Search tasks..."
-                        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none"
+                        class="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                     />
                 </div>
 
                 {{-- Status --}}
-
                 <div>
-                    <label class="mb-1 block text-xs font-medium text-gray-600">
+                    <label class="mb-1 block text-sm font-medium text-gray-700">
                         Status
                     </label>
 
                     <select
                         wire:model.live="status"
-                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none"
+                        class="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500"
                     >
                         <option value="all">All</option>
                         <option value="pending">Pending</option>
@@ -421,15 +288,14 @@ new class extends Component
                 </div>
 
                 {{-- Priority --}}
-
                 <div>
-                    <label class="mb-1 block text-xs font-medium text-gray-600">
+                    <label class="mb-1 block text-sm font-medium text-gray-700">
                         Priority
                     </label>
 
                     <select
                         wire:model.live="priority"
-                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none"
+                        class="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500"
                     >
                         <option value="all">All</option>
                         <option value="high">High</option>
@@ -437,372 +303,287 @@ new class extends Component
                         <option value="low">Low</option>
                     </select>
                 </div>
+            </div>
 
-                {{-- Sort --}}
-
-                <div>
-                    <label class="mb-1 block text-xs font-medium text-gray-600">
-                        Sort By
+            <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <label class="text-sm font-medium text-gray-700">
+                        Sort:
                     </label>
 
                     <select
                         wire:model.live="sort"
-                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none"
+                        class="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
                     >
-                        <option value="newest">Newest First</option>
-                        <option value="oldest">Oldest First</option>
-                        <option value="high">High Priority First</option>
-                        <option value="low">Low Priority First</option>
+                        <option value="newest">Newest</option>
+                        <option value="oldest">Oldest</option>
+                        <option value="high">High Priority</option>
+                        <option value="low">Low Priority</option>
                     </select>
                 </div>
-            </div>
-        </div>
 
-        {{-- ================================================================
-             Todo Heading + Add Button
-        ================================================================= --}}
-
-        <div class="mb-4 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <h2 class="text-xl font-semibold text-gray-800">My Todos</h2>
-
-                <span
-                    class="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700"
+                <button
+                    type="button"
+                    wire:click="toggleCreateForm"
+                    class="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700"
                 >
-                    {{ $todos->total() }}
-                </span>
+                    + Add Task
+                </button>
             </div>
-
-            <button
-                type="button"
-                wire:click="toggleCreateForm"
-                class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700"
-            >
-                @if ($showCreateForm)
-                    − Close
-                @else
-                    + Add New Task
-                @endif
-            </button>
         </div>
 
-        {{-- ================================================================
-             Add Task Popup
-        ================================================================= --}}
+        {{-- Loading indicator --}}
+        <div
+            wire:loading
+            wire:target="search,status,priority,sort"
+            class="mb-4 text-sm text-gray-500"
+        >
+            Loading tasks...
+        </div>
 
+        {{-- Create Task Popup --}}
         @if ($showCreateForm)
             <div
-                class="fixed inset-0 z-40 flex items-start justify-center bg-black/30 px-4 pt-20"
-                wire:click.self="toggleCreateForm"
+                class="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4"
             >
-                <div class="w-full max-w-md rounded-xl bg-white p-5 shadow-xl">
-                    {{-- Popup Header --}}
-
-                    <div class="mb-4 flex items-center justify-between">
-                        <h2 class="text-lg font-semibold text-gray-800">
+                <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+                    <div class="mb-5 flex items-center justify-between">
+                        <h2 class="text-xl font-bold text-gray-800">
                             Add New Task
                         </h2>
 
                         <button
                             type="button"
                             wire:click="toggleCreateForm"
-                            class="rounded-md px-2 py-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                            class="text-2xl text-gray-400 hover:text-gray-600"
                         >
-                            ✕
+                            &times;
                         </button>
                     </div>
 
-                    <form wire:submit="saveTodo">
+                    <form wire:submit="saveTodo" class="space-y-4">
                         {{-- Task --}}
-
-                        <div class="mb-3">
+                        <div>
                             <label
-                                class="mb-1 block text-xs font-medium text-gray-700"
+                                class="mb-1 block text-sm font-medium text-gray-700"
                             >
                                 Task
                             </label>
 
                             <input
                                 type="text"
-                                wire:model.live="task"
-                                placeholder="Enter task name"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none"
+                                wire:model="task"
+                                class="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                             />
 
                             @error ('task')
-                                <p class="mt-1 text-xs text-red-600">
+                                <p class="mt-1 text-sm text-red-600">
                                     {{ $message }}
                                 </p>
                             @enderror
                         </div>
 
                         {{-- Description --}}
-
-                        <div class="mb-3">
+                        <div>
                             <label
-                                class="mb-1 block text-xs font-medium text-gray-700"
+                                class="mb-1 block text-sm font-medium text-gray-700"
                             >
                                 Description
                             </label>
 
                             <textarea
                                 wire:model="description"
-                                rows="3"
-                                placeholder="Enter task description"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none"
+                                rows="4"
+                                class="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                             ></textarea>
 
                             @error ('description')
-                                <p class="mt-1 text-xs text-red-600">
+                                <p class="mt-1 text-sm text-red-600">
                                     {{ $message }}
                                 </p>
                             @enderror
                         </div>
 
                         {{-- Priority --}}
-
-                        <div class="mb-4">
+                        <div>
                             <label
-                                class="mb-1 block text-xs font-medium text-gray-700"
+                                class="mb-1 block text-sm font-medium text-gray-700"
                             >
                                 Priority
                             </label>
 
                             <select
                                 wire:model="taskPriority"
-                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200 focus:outline-none"
+                                class="w-full rounded-lg border border-gray-300 px-4 py-2.5 outline-none focus:border-blue-500"
                             >
-                                <option value="high">High Priority</option>
-                                <option value="medium">Medium Priority</option>
-                                <option value="low">Low Priority</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
                             </select>
 
                             @error ('taskPriority')
-                                <p class="mt-1 text-xs text-red-600">
+                                <p class="mt-1 text-sm text-red-600">
                                     {{ $message }}
                                 </p>
                             @enderror
                         </div>
 
-                        {{-- Submit --}}
+                        <div class="flex justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                wire:click="toggleCreateForm"
+                                class="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            >
+                                Cancel
+                            </button>
 
-                        <button
-                            type="submit"
-                            wire:loading.attr="disabled"
-                            wire:target="saveTodo"
-                            class="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            <span wire:loading.remove wire:target="saveTodo">
-                                Add Task
-                            </span>
+                            <button
+                                type="submit"
+                                wire:loading.attr="disabled"
+                                wire:target="saveTodo"
+                                class="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                <span
+                                    wire:loading.remove
+                                    wire:target="saveTodo"
+                                >
+                                    Save Task
+                                </span>
 
-                            <span wire:loading wire:target="saveTodo">
-                                Adding...
-                            </span>
-                        </button>
+                                <span wire:loading wire:target="saveTodo">
+                                    Saving...
+                                </span>
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
 
         @endif
 
-        {{-- ================================================================
-             Todo List
-        ================================================================= --}}
-
-        <div class="space-y-3">
-            @forelse ($todos as $todo)
+        {{-- Todo List --}}
+        <div class="space-y-4">
+            @forelse ($this->todos as $todo)
                 <div
                     wire:key="todo-{{ $todo->id }}"
-                    class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md"
+                    class="rounded-xl bg-white p-5 shadow-sm"
                 >
                     <div class="flex items-start justify-between gap-4">
-                        {{-- Todo Information --}}
-
-                        <div class="flex flex-1 items-start gap-3">
+                        <div class="flex min-w-0 items-start gap-3">
                             <input
                                 type="checkbox"
                                 wire:click="toggleComplete({{ $todo->id }})"
-                                {{ $todo->is_completed ? 'checked' : '' }}
-                                class="mt-1 h-4 w-4 cursor-pointer"
+                                class="mt-1 h-5 w-5 rounded border-gray-300"
+                                @checked ($todo->is_completed)
                             />
 
-                            <div class="flex-1">
+                            <div class="min-w-0">
                                 <h3
-                                    class="text-base font-semibold
-                                    {{ $todo->is_completed
-                                        ? 'text-gray-400 line-through'
-                                        : 'text-gray-800' }}"
+                                    class="font-semibold {{ $todo->is_completed ? 'text-gray-400 line-through' : 'text-gray-800' }}"
                                 >
                                     {{ $todo->task }}
                                 </h3>
 
                                 @if ($todo->description)
-                                    <p class="mt-1 text-sm text-gray-600">
+                                    <p class="mt-1 text-sm text-gray-500">
                                         {{ $todo->description }}
                                     </p>
-
                                 @endif
 
-                                {{-- Priority Badge --}}
-
-                                <span
-                                    class="mt-2 inline-block rounded-full px-2 py-1 text-xs font-medium
-                                    {{ $todo->priority === 'high'
-                                        ? 'bg-red-100 text-red-700'
-                                        : ($todo->priority === 'medium'
-                                            ? 'bg-yellow-100 text-yellow-700'
-                                            : 'bg-green-100 text-green-700') }}"
+                                <div
+                                    class="mt-3 flex flex-wrap items-center gap-2"
                                 >
-                                    {{ ucfirst($todo->priority) }}
-                                </span>
+                                    <span
+                                        class="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600"
+                                    >
+                                        {{ ucfirst($todo->priority) }}
+                                    </span>
 
-                                {{-- Completed Time --}}
-
-                                @if ($todo->is_completed && $todo->completed_at)
-                                    <p class="mt-1 text-xs text-green-600">
-                                        Done: {{ $todo->completed_at->format('M d, Y h:i A') }}
-                                    </p>
-
-                                @endif
+                                    <span
+                                        class="rounded-full px-2.5 py-1 text-xs font-medium
+                                        {{ $todo->is_completed
+                                            ? 'bg-green-100 text-green-700'
+                                            : 'bg-yellow-100 text-yellow-700' }}"
+                                    >
+                                        {{ $todo->is_completed ? 'Completed' : 'Pending' }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
-                        {{-- Edit + Delete Buttons --}}
+                        <div class="flex shrink-0 items-center gap-2">
+                            <a
+                                href="{{ route('livewire.todo.show', $todo) }}"
+                                class="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                            >
+                                View
+                            </a>
 
-                        <div class="flex items-center gap-2">
-                            {{-- Edit --}}
-
-                            @if (!$todo->is_completed)
+                            @if (! $todo->is_completed)
                                 <a
                                     href="{{ route('livewire.todo.edit', $todo) }}"
-                                    class="rounded-lg border border-blue-200 px-3 py-1.5 text-sm font-medium text-blue-600 transition hover:bg-blue-50"
+                                    class="rounded-lg border border-blue-300 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50"
                                 >
                                     Edit
                                 </a>
 
                             @endif
 
-                            {{-- Delete --}}
-
                             <button
                                 type="button"
                                 wire:click="confirmDelete({{ $todo->id }})"
-                                wire:loading.attr="disabled"
-                                wire:target="deleteTodo"
-                                class="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                class="rounded-lg border border-red-300 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
                             >
-                                <span
-                                    wire:loading.remove
-                                    wire:target="deleteTodo"
-                                >
-                                    Delete
-                                </span>
-
-                                <span wire:loading wire:target="deleteTodo">
-                                    Deleting...
-                                </span>
+                                Delete
                             </button>
                         </div>
                     </div>
                 </div>
 
             @empty
-                <div class="rounded-xl bg-white p-8 text-center shadow-sm">
-                    <p class="text-sm text-gray-500">No todos found.</p>
+                <div class="rounded-xl bg-white p-10 text-center shadow-sm">
+                    <h3 class="text-lg font-semibold text-gray-700">
+                        No tasks found
+                    </h3>
+
+                    <p class="mt-1 text-sm text-gray-500">Try changing your search or filters.</p>
                 </div>
 
             @endforelse
         </div>
 
-        {{-- ================================================================
-             Pagination
-        ================================================================= --}}
-
-        <div class="mt-5">{{ $todos->links() }}</div>
+        {{-- Pagination --}}
+        <div class="mt-6">{{ $this->todos->links() }}</div>
     </div>
-
-    {{-- ================================================================
-         SweetAlert / Toast JavaScript
-         This is INSIDE the single root element.
-    ================================================================= --}}
 
     @script
         <script>
-            /*
-            |--------------------------------------------------------------------------
-            | Toast Messages
-            |--------------------------------------------------------------------------
-            */
-
             $wire.on("show-toast", (event) => {
                 Swal.fire({
                     toast: true,
-
                     position: "top-end",
-
                     icon: event.type,
-
                     title: event.message,
-
                     showConfirmButton: false,
-
-                    showClass: {
-                        popup: "",
-                    },
-
-                    hideClass: {
-                        popup: "",
-                    },
-
                     timer: 3000,
-
                     timerProgressBar: true,
-
                     background: "#ffffff",
-
                     color: "#111111",
                 });
             });
 
-            /*
-            |--------------------------------------------------------------------------
-            | Delete Confirmation
-            |--------------------------------------------------------------------------
-            */
-
             $wire.on("confirm-delete", (event) => {
                 Swal.fire({
                     title: "Delete this task?",
-
+                    text: "This task will be moved to the trash.",
                     icon: "warning",
-
                     iconColor: "#dc2626",
-
-                    draggable: true,
-
-                    width: "400px",
-
                     showCancelButton: true,
-
                     confirmButtonText: "Yes, delete it",
-
                     cancelButtonText: "Cancel",
-
-                    showClass: {
-                        popup: "",
-                    },
-
-                    hideClass: {
-                        popup: "",
-                    },
-
                     background: "#ffffff",
-
                     color: "#1f2937",
-
                     confirmButtonColor: "#aa0000",
-
                     cancelButtonColor: "#6b7280",
                 }).then((result) => {
                     if (result.isConfirmed) {
@@ -811,6 +592,5 @@ new class extends Component
                 });
             });
         </script>
-
     @endscript
 </div>

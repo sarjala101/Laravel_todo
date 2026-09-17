@@ -10,20 +10,22 @@ class UserProfile extends Model
 {
     use HasFactory;
 
+    protected $table = 'profiles';
+
     protected $fillable = [
         'user_id',
         'role',
-        'dob',
+        'current_status',
+        'affiliated_organization',
+        'date_of_birth',
         'phone',
         'description',
-        'academic_qualification',
         'location',
-        'semester',
         'profile_image',
     ];
 
     protected $casts = [
-        'dob' => 'date',
+        'date_of_birth' => 'date',
     ];
 
     public function user(): BelongsTo

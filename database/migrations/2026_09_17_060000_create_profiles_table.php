@@ -8,8 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('user_profiles')) {
-            Schema::create('user_profiles', function (Blueprint $table) {
+        Schema::dropIfExists('user_profiles');
+
+        if (!Schema::hasTable('profiles')) {
+            Schema::create('profiles', function (Blueprint $table) {
                 $table->id();
 
                 $table->foreignId('user_id')
@@ -18,12 +20,12 @@ return new class extends Migration
                     ->onDelete('cascade');
 
                 $table->string('role')->nullable();
-                $table->date('dob')->nullable();
+                $table->string('current_status')->nullable();
+                $table->string('affiliated_organization')->nullable();
+                $table->date('date_of_birth')->nullable();
                 $table->string('phone')->nullable();
                 $table->text('description')->nullable();
-                $table->string('academic_qualification')->nullable();
                 $table->string('location')->nullable();
-                $table->string('semester')->nullable();
                 $table->string('profile_image')->nullable();
 
                 $table->timestamps();
@@ -33,6 +35,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('user_profiles');
+        Schema::dropIfExists('profiles');
     }
 };

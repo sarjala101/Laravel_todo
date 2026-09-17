@@ -27,11 +27,13 @@ class ProjectController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'link' => 'nullable|string|max:500',
         ]);
 
         $project = $request->user()->projects()->create([
             'title' => $request->title,
             'description' => $request->description,
+            'link' => $request->link,
         ]);
 
         return response()->json([
@@ -46,6 +48,7 @@ class ProjectController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'link' => 'nullable|string|max:500',
         ]);
 
         // Find only the logged-in user's project
@@ -56,6 +59,7 @@ class ProjectController extends Controller
         $project->update([
             'title' => $request->title,
             'description' => $request->description,
+            'link' => $request->link,
         ]);
 
         return response()->json([

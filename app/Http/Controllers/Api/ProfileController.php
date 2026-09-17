@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\UserProfile;
+use App\Models\Profile;
 use Illuminate\Http\Request;
 
 class ProfileController extends Controller
@@ -17,6 +17,8 @@ class ProfileController extends Controller
 
         $user->load([
             'profile',
+            'academicQualifications',
+            'experiences',
             'skills',
             'projects',
             'achievements',
@@ -31,59 +33,52 @@ class ProfileController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'created_at' => $user->created_at,
+                    'updated_at' => $user->updated_at,
                 ],
-
                 'profile' => $user->profile,
-
+                'academic_qualifications' => $user->academicQualifications,
+                'experiences' => $user->experiences,
                 'skills' => $user->skills,
-
                 'projects' => $user->projects,
-
                 'achievements' => $user->achievements,
-
                 'courseworks' => $user->courseworks,
-
                 'interests' => $user->interests,
             ],
         ], 200);
     }
 
-
     /**
-     * Create or update the authenticated user's profile.
+     * Create or update the authenticated user's general profile information.
      */
     public function update(Request $request)
     {
         $request->validate([
             'role' => 'nullable|string|max:255',
-
-            'dob' => 'nullable|date',
-
-            'phone' => 'nullable|string|max:30',
-
+            'current_status' => 'nullable|string|max:255',
+            'affiliated_organization' => 'nullable|string|max:255',
+            'date_of_birth' => 'nullable|date',
+            'phone' => 'nullable|string|max:50',
             'description' => 'nullable|string',
-
-            'academic_qualification' => 'nullable|string|max:255',
-
             'location' => 'nullable|string|max:255',
-
-            'semester' => 'nullable|string|max:100',
+            'profile_image' => 'nullable|string|max:500',
         ]);
 
         $user = $request->user();
 
-        $profile = UserProfile::updateOrCreate(
+        $profile = Profile::updateOrCreate(
             [
                 'user_id' => $user->id,
             ],
             [
                 'role' => $request->role,
-                'dob' => $request->dob,
+                'current_status' => $request->current_status,
+                'affiliated_organization' => $request->affiliated_organization,
+                'date_of_birth' => $request->date_of_birth,
                 'phone' => $request->phone,
                 'description' => $request->description,
-                'academic_qualification' => $request->academic_qualification,
                 'location' => $request->location,
-                'semester' => $request->semester,
+                'profile_image' => $request->profile_image,
             ]
         );
 

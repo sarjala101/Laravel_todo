@@ -6,15 +6,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Project extends Model
+class AcademicQualification extends Model
 {
     use HasFactory;
 
+    protected $table = 'academic_qualifications';
+
     protected $fillable = [
         'user_id',
-        'title',
-        'description',
-        'link',
+        'degree',
+        'institution',
+        'field',
+        'start_date',
+        'end_date',
+    ];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
     public function user(): BelongsTo

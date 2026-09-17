@@ -89,6 +89,41 @@ Content-Type: application/json
 }
 ```
 
+### Check Email Availability
+- **Endpoint**: `POST /check-email`
+- **Authentication**: None required
+- **Request Body**:
+```json
+{
+  "email": "john@example.com"
+}
+```
+- **Validation Rules**:
+  - `email`: required | email
+- **Response - Registered Email (200 OK)**:
+```json
+{
+  "exists": true
+}
+```
+- **Response - Available Email (200 OK)**:
+```json
+{
+  "exists": false
+}
+```
+- **Response - Validation Error (422 Unprocessable Entity)**:
+```json
+{
+  "message": "The email field is required.",
+  "errors": {
+    "email": [
+      "The email field must be a valid email address."
+    ]
+  }
+}
+```
+
 ---
 
 ## 2. User Profile & Sub-collections

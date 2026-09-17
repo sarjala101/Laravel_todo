@@ -13,10 +13,20 @@ new class extends Component
 
     public $priority = 'medium';
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Load Todo
+    |--------------------------------------------------------------------------
+    */
+
     public function mount(Todo $todo)
     {
         // Make sure this todo belongs to the logged-in user
-        abort_unless($todo->user_id === auth()->id(), 403);
+        abort_unless(
+            $todo->user_id === auth()->id(),
+            403
+        );
 
         // Completed todos cannot be edited
         if ($todo->is_completed) {
@@ -25,11 +35,19 @@ new class extends Component
 
         $this->todo = $todo;
 
-        // Put existing todo data into the form
         $this->task = $todo->task;
+
         $this->description = $todo->description;
+
         $this->priority = $todo->priority;
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update Todo
+    |--------------------------------------------------------------------------
+    */
 
     public function updateTodo()
     {
@@ -45,11 +63,19 @@ new class extends Component
             'priority' => $this->priority,
         ]);
 
-        $this->dispatch(
-        'show-toast',
-        type: 'success',
-        message: 'Task updated successfully!'
-        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Store Toast Before Redirect
+        |--------------------------------------------------------------------------
+        */
+
+        session()->flash('toast', [
+            'type' => 'success',
+            'message' => 'Task updated successfully!',
+        ]);
+
+
         return redirect()->route('livewire.todo');
     }
 };
@@ -58,13 +84,23 @@ new class extends Component
 <div class="min-h-screen bg-gray-100 py-8">
     <div class="mx-auto max-w-2xl px-4">
         <div class="rounded-xl bg-white p-6 shadow-sm">
+            {{-- ============================================================
+                 Page Header
+            ============================================================= --}}
+
             <div class="mb-6">
                 <h1 class="text-2xl font-bold text-gray-800">Edit Task</h1>
 
                 <p class="mt-1 text-sm text-gray-500">Update your task details</p>
             </div>
 
+            {{-- ============================================================
+                 Edit Form
+            ============================================================= --}}
+
             <form wire:submit="updateTodo">
+                {{-- Task --}}
+
                 <div class="mb-4">
                     <label class="mb-1 block text-sm font-medium text-gray-700">
                         Task
@@ -78,8 +114,11 @@ new class extends Component
 
                     @error ('task')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+
                     @enderror
                 </div>
+
+                {{-- Description --}}
 
                 <div class="mb-4">
                     <label class="mb-1 block text-sm font-medium text-gray-700">
@@ -94,8 +133,11 @@ new class extends Component
 
                     @error ('description')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+
                     @enderror
                 </div>
+
+                {{-- Priority --}}
 
                 <div class="mb-6">
                     <label class="mb-1 block text-sm font-medium text-gray-700">
@@ -115,8 +157,11 @@ new class extends Component
 
                     @error ('priority')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+
                     @enderror
                 </div>
+
+                {{-- Buttons --}}
 
                 <div class="flex gap-3">
                     <button

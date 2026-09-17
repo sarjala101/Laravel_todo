@@ -16,6 +16,17 @@ Route::middleware('auth')->group(function () {
     Route::livewire('/livewire-todo/{todo}/edit', 'todo-edit')
         ->name('livewire.todo.edit');
 
+    Route::livewire('/livewire-account', 'account')
+        ->name('livewire.account');
+
+});
+
+
+Route::middleware('guest')->group(function () {
+
+    Route::livewire('/livewire-login', 'login')
+        ->name('livewire.login');
+
 });
 /*
 |--------------------------------------------------------------------------

@@ -1,13 +1,10 @@
 <?php
 
-//use App\Livewire\Concerns\HasTaskRules;
 use App\Models\Todo;
 use Livewire\Component;
 
 new class extends Component
 {
-   // use HasTaskRules;
-
     public Todo $todo;
 
     public $task = '';
@@ -18,7 +15,16 @@ new class extends Component
 
     public function mount(Todo $todo)
     {
-        $this->authorize('update', $todo);
+        // Make sure this task belongs to the logged-in user.
+        abort_unless(
+            $todo->user_id === auth()->id(),
+            403
+        );
+
+        // Completed tasks cannot be edited.
+        if ($todo->is_completed) {
+            abort(403, 'Completed tasks cannot be edited.');
+        }
 
         $this->todo = $todo;
 
@@ -30,10 +36,10 @@ new class extends Component
     public function updateTodo()
     {
         $this->validate([
-    'task' => ['required', 'string', 'max:255'],
-    'description' => ['nullable', 'string'],
-    'priority' => ['required', 'in:high,medium,low'],
-]);
+            'task' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'priority' => ['required', 'in:high,medium,low'],
+        ]);
 
         $this->todo->update([
             'task' => $this->task,
@@ -53,6 +59,7 @@ new class extends Component
 
 <div class="min-h-screen bg-gray-100 py-8">
     <div class="mx-auto max-w-2xl px-4">
+        {{-- Header --}}
         <div class="mb-6 flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-800">Edit Task</h1>
@@ -68,6 +75,7 @@ new class extends Component
             </a>
         </div>
 
+        {{-- Form --}}
         <div class="rounded-2xl bg-white p-6 shadow-sm">
             <form wire:submit="updateTodo" class="space-y-5">
                 {{-- Task --}}
@@ -124,6 +132,7 @@ new class extends Component
                     @enderror
                 </div>
 
+                {{-- Buttons --}}
                 <div class="flex justify-end gap-3 pt-2">
                     <a
                         href="{{ route('livewire.todo') }}"

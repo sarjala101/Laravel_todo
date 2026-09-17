@@ -9,7 +9,11 @@ new class extends Component
 
     public function mount(Todo $todo)
     {
-        $this->authorize('view', $todo);
+        // Make sure this task belongs to the logged-in user.
+        abort_unless(
+            $todo->user_id === auth()->id(),
+            403
+        );
 
         $this->todo = $todo;
     }
@@ -18,6 +22,7 @@ new class extends Component
 
 <div class="min-h-screen bg-gray-100 py-8">
     <div class="mx-auto max-w-2xl px-4">
+        {{-- Header --}}
         <div class="mb-6 flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-800">Task Details</h1>
@@ -33,6 +38,7 @@ new class extends Component
             </a>
         </div>
 
+        {{-- Task details --}}
         <div class="rounded-2xl bg-white p-6 shadow-sm">
             <div class="mb-6">
                 <h2 class="text-2xl font-bold text-gray-800">
@@ -57,6 +63,7 @@ new class extends Component
                 </div>
             </div>
 
+            {{-- Description --}}
             <div class="border-t border-gray-200 pt-5">
                 <h3 class="text-sm font-semibold text-gray-700">Description</h3>
 
@@ -71,6 +78,7 @@ new class extends Component
                 @endif
             </div>
 
+            {{-- Dates --}}
             <div class="mt-6 border-t border-gray-200 pt-5">
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
@@ -91,6 +99,7 @@ new class extends Component
                 </div>
             </div>
 
+            {{-- Edit --}}
             @if (! $todo->is_completed)
                 <div class="mt-6">
                     <a

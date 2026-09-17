@@ -6,31 +6,15 @@ use Livewire\Component;
 new class extends Component
 {
     public $email = '';
-
     public $password = '';
-
     public $remember = false;
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Login
-    |--------------------------------------------------------------------------
-    */
 
     public function login()
     {
         $this->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+            'email' => ['required', 'email'],
+            'password' => ['required'],
         ]);
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Check Credentials
-        |--------------------------------------------------------------------------
-        */
 
         if (! Auth::attempt([
             'email' => $this->email,
@@ -45,27 +29,12 @@ new class extends Component
             return;
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Regenerate Session
-        |--------------------------------------------------------------------------
-        */
-
         request()->session()->regenerate();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Login Toast
-        |--------------------------------------------------------------------------
-        */
 
         session()->flash('toast', [
             'type' => 'success',
             'message' => 'Login successful!',
         ]);
-
 
         return redirect()->route('livewire.todo');
     }
@@ -73,104 +42,99 @@ new class extends Component
 ?>
 
 <div class="flex min-h-screen items-center justify-center bg-gray-100 px-4">
-    {{-- ================================================================
-         Toast
-    ================================================================= --}}
+    <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
+        {{-- Header --}}
+        <div class="mb-6 text-center">
+            <h1 class="text-3xl font-bold text-gray-800">Login</h1>
 
-    @if (session()->has('toast'))
-        <div
-            data-toast
-            data-toast-type="{{ session('toast.type') }}"
-            data-toast-message="{{ session('toast.message') }}"
-            class="hidden"
-        ></div>
+            <p class="mt-2 text-sm text-gray-500">Login to manage your tasks</p>
+        </div>
 
-    @endif
+        {{-- Login Form --}}
+        <form wire:submit="login" class="space-y-5">
+            {{-- Email --}}
+            <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700">
+                    Email
+                </label>
 
-    <div class="w-full max-w-md">
-        <div class="rounded-xl bg-white p-6 shadow-sm">
-            {{-- ============================================================
-                 Header
-            ============================================================= --}}
+                <input
+                    type="email"
+                    wire:model="email"
+                    autocomplete="email"
+                    placeholder="Enter your email"
+                    class="w-full rounded-lg border border-gray-300 px-4 py-2.5 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
 
-            <div class="mb-6 text-center">
-                <h1 class="text-2xl font-bold text-gray-800">Livewire Login</h1>
-
-                <p class="mt-1 text-sm text-gray-500">Login using a Livewire component</p>
+                @error ('email')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
-            {{-- ============================================================
-                 Login Form
-            ============================================================= --}}
-
-            <form wire:submit="login">
-                {{-- Email --}}
-
-                <div class="mb-4">
-                    <label class="mb-1 block text-sm font-medium text-gray-700">
-                        Email
-                    </label>
-
-                    <input
-                        type="email"
-                        wire:model="email"
-                        autocomplete="email"
-                        class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
-                    />
-
-                    @error ('email')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-
-                    @enderror
-                </div>
-
-                {{-- Password --}}
-
-                <div class="mb-4">
-                    <label class="mb-1 block text-sm font-medium text-gray-700">
+            {{-- Password --}}
+            <div>
+                <div class="mb-1 flex items-center justify-between">
+                    <label class="block text-sm font-medium text-gray-700">
                         Password
                     </label>
-
-                    <input
-                        type="password"
-                        wire:model="password"
-                        autocomplete="current-password"
-                        class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
-                    />
-
-                    @error ('password')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-
-                    @enderror
                 </div>
 
-                {{-- Remember Me --}}
+                <input
+                    type="password"
+                    wire:model="password"
+                    autocomplete="current-password"
+                    placeholder="Enter your password"
+                    class="w-full rounded-lg border border-gray-300 px-4 py-2.5 transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
 
-                <div class="mb-6 flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        wire:model="remember"
-                        class="rounded border-gray-300"
-                    />
+                @error ('password')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
 
-                    <label class="text-sm text-gray-600"> Remember me </label>
-                </div>
+            {{-- Remember me --}}
+            <div class="flex items-center">
+                <input
+                    type="checkbox"
+                    wire:model="remember"
+                    id="remember"
+                    class="h-4 w-4 rounded border-gray-300"
+                />
 
-                {{-- Login Button --}}
+                <label for="remember" class="ml-2 text-sm text-gray-600">
+                    Remember me
+                </label>
+            </div>
+            <a
+                href="{{ route('password.request') }}"
+                class="text-sm font-medium text-blue-600 hover:text-blue-700"
+            >
+                Forgot password?
+            </a>
 
-                <button
-                    type="submit"
-                    wire:loading.attr="disabled"
-                    wire:target="login"
-                    class="w-full rounded-lg bg-blue-600 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    <span wire:loading.remove wire:target="login"> Login </span>
+            {{-- Login button --}}
+            <button
+                type="submit"
+                wire:loading.attr="disabled"
+                wire:target="login"
+                class="w-full rounded-lg bg-blue-600 px-4 py-2.5 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+                <span wire:loading.remove wire:target="login"> Login </span>
 
-                    <span wire:loading wire:target="login">
-                        Logging in...
-                    </span>
-                </button>
-            </form>
+                <span wire:loading wire:target="login"> Logging in... </span>
+            </button>
+        </form>
+
+        {{-- Register --}}
+        <div class="mt-6 text-center text-sm text-gray-600">
+            Don't have an account?
+
+            <a
+                href="{{ route('livewire.register') }}"
+                class="font-medium text-blue-600 hover:text-blue-700"
+            >
+                Register
+            </a>
         </div>
     </div>
 </div>

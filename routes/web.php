@@ -12,7 +12,6 @@ use App\Http\Controllers\ForgetPasswordManager;
 | Livewire Routes
 |--------------------------------------------------------------------------
 */
-
 Route::middleware('guest')->group(function () {
 
     Route::livewire('/livewire-login', 'login')

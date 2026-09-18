@@ -8,16 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('projects', function (Blueprint $table) {
+        Schema::create('experiences', function (Blueprint $table) {
             $table->id();
 
             $table->foreignId('user_id')
                 ->constrained('users')
                 ->onDelete('cascade');
 
-            $table->string('title');
+            $table->string('organization');
+            $table->string('position');
             $table->text('description')->nullable();
-            $table->string('link')->nullable();
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
+            $table->boolean('is_current')->default(false);
 
             $table->timestamps();
         });
@@ -25,6 +28,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('projects');
+        Schema::dropIfExists('experiences');
     }
 };

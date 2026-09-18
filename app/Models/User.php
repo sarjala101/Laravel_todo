@@ -45,13 +45,23 @@ class User extends Authenticatable
 
     /*
     |--------------------------------------------------------------------------
-    | Profile Relationships
+    | Profile & Related Collection Relationships
     |--------------------------------------------------------------------------
     */
 
     public function profile(): HasOne
     {
-        return $this->hasOne(UserProfile::class);
+        return $this->hasOne(Profile::class);
+    }
+
+    public function academicQualifications(): HasMany
+    {
+        return $this->hasMany(AcademicQualification::class);
+    }
+
+    public function experiences(): HasMany
+    {
+        return $this->hasMany(Experience::class);
     }
 
     public function skills(): HasMany

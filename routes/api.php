@@ -13,6 +13,11 @@ use App\Http\Controllers\Api\AchievementController;
 use App\Http\Controllers\Api\CourseworkController;
 use App\Http\Controllers\Api\InterestController;
 
+use App\Http\Controllers\Api\FcmTokenController;
+
+
+use App\Http\Controllers\Api\FcmNotificationController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -82,5 +87,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/interests', [InterestController::class, 'store']);
     Route::put('/user/interests/{id}', [InterestController::class, 'update']);
     Route::delete('/user/interests/{id}', [InterestController::class, 'destroy']);
+
+
+
+    //firebase
+    Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/fcm-token', [FcmTokenController::class, 'store']);
+    Route::delete('/fcm-token', [FcmTokenController::class, 'destroy']);
+    });
+
+    
+
+    Route::post('/fcm-test', [FcmNotificationController::class, 'test']);
+
 
 });

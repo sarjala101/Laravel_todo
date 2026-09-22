@@ -16,6 +16,9 @@ use App\Http\Controllers\Api\InterestController;
 use App\Http\Controllers\Api\FcmTokenController;
 
 
+use App\Http\Controllers\Api\FcmNotificationController;
+
+
 /*
 |--------------------------------------------------------------------------
 | Authentication Routes (Unchanged)
@@ -92,5 +95,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/fcm-token', [FcmTokenController::class, 'store']);
     Route::delete('/fcm-token', [FcmTokenController::class, 'destroy']);
     });
+
+    
+
+    Route::post('/fcm-test', [FcmNotificationController::class, 'test']);
+
 
 });

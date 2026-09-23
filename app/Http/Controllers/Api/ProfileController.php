@@ -54,6 +54,7 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $request->validate([
+            'name' => 'nullable|string|max:255',
             'role' => 'nullable|string|max:255',
             'current_status' => 'nullable|string|max:255',
             'affiliated_organization' => 'nullable|string|max:255',
@@ -65,6 +66,10 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        if ($request->has('name') && !empty($request->name)) {
+            $user->update(['name' => $request->name]);
+        }
 
         $profile = Profile::updateOrCreate(
             [
@@ -81,6 +86,7 @@ class ProfileController extends Controller
                 'profile_image' => $request->profile_image,
             ]
         );
+
 
         return response()->json([
             'message' => 'Profile updated successfully',

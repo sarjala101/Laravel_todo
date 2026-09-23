@@ -32,6 +32,10 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::middleware('auth:sanctum')->put('/user/name', [AuthController::class, 'updateName']);
+Route::middleware('auth:sanctum')->put('/user/update-name', [AuthController::class, 'updateName']);
+Route::middleware('auth:sanctum')->put('/user/password', [AuthController::class, 'updatePassword']);
+Route::middleware('auth:sanctum')->put('/user/update-password', [AuthController::class, 'updatePassword']);
 
 
 /*

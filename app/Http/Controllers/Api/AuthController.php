@@ -76,4 +76,52 @@ class AuthController extends Controller
             'exists' => $exists,
         ]);
     }
+
+    /**
+     * Update the authenticated user's name.
+     */
+    public function updateName(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $user = $request->user();
+        $user->update([
+            'name' => $request->name,
+        ]);
+
+        return response()->json([
+            'message' => 'Name updated successfully',
+            'user' => $user,
+        ], 200);
+    }
+
+    /**
+     * Update the authenticated user's password.
+     */
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'message' => 'Current password does not match',
+            ], 400);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return response()->json([
+            'message' => 'Password updated successfully',
+        ], 200);
+    }
 }
+

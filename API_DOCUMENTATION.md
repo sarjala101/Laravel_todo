@@ -192,8 +192,7 @@ Content-Type: application/json
         "id": 1,
         "user_id": 1,
         "title": "Smart Wardrobe App",
-        "description": "Mobile app built with Flutter and Laravel",
-        "link": "https://github.com/user/project"
+        "description": "Mobile app built with Flutter and Laravel"
       }
     ],
     "achievements": [
@@ -347,14 +346,12 @@ Content-Type: application/json
 ```json
 {
   "title": "Smart Wardrobe App",
-  "description": "AI-assisted wardrobe styling mobile application.",
-  "link": "https://github.com/user/smart-wardrobe"
+  "description": "AI-assisted wardrobe styling mobile application."
 }
 ```
 ### Validation Rules:
 - `title`: required | string | max:255
 - `description`: nullable | string
-- `link`: nullable | string | max:500
 
 ---
 

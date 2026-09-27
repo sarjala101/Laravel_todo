@@ -231,9 +231,12 @@ new class extends Component
             <div class="flex items-center gap-2">
                 <a
                     href="{{ route('livewire.account') }}"
-                    class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
+                    title="Profile"
+                    class="flex items-center justify-center rounded-lg border border-gray-300 bg-white p-2.5 text-gray-700 shadow-sm transition hover:bg-gray-50"
                 >
-                    Profile
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
                 </a>
 
                 <button

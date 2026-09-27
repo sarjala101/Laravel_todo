@@ -124,6 +124,10 @@ Route::post('/reset-password', [ForgetPasswordManager::class, 'updatePassword'])
 
     Route::delete('/todo/{id}', [TodoController::class, 'destroy'])
         ->name('todo.destroy');
+
+    Route::get('/account', function () {
+        return view('account');
+    })->name('account');
 });
 
 

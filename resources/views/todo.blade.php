@@ -52,27 +52,42 @@
 
 
 
-            <!-- LOGOUT BUTTON -->
+            <!-- PROFILE & LOGOUT BUTTONS -->
 
-            <form
-                action="/logout"
-                method="POST"
-            >
+            <div class="flex items-center gap-2">
 
-                @csrf
-
-                <button
-                    type="submit"
+                <a
+                    href="{{ route('account') }}"
                     class="px-4 py-2
-                           bg-blue-600 text-white
-                           rounded-lg
-                           hover:bg-blue-700
-                           transition"
+                           border border-gray-300 bg-white
+                           text-gray-700 rounded-lg
+                           hover:bg-gray-50
+                           transition text-sm font-medium shadow-sm"
                 >
-                    Logout
-                </button>
+                    Profile
+                </a>
 
-            </form>
+                <form
+                    action="/logout"
+                    method="POST"
+                >
+
+                    @csrf
+
+                    <button
+                        type="submit"
+                        class="px-4 py-2
+                               bg-blue-600 text-white
+                               rounded-lg
+                               hover:bg-blue-700
+                               transition text-sm font-medium"
+                    >
+                        Logout
+                    </button>
+
+                </form>
+
+            </div>
 
 
         </div>

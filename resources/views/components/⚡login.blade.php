@@ -45,9 +45,9 @@ new class extends Component
     <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
         {{-- Header --}}
         <div class="mb-6 text-center">
-            <h1 class="text-3xl font-bold text-gray-800">Login</h1>
+            <h1 class="text-3xl font-bold text-gray-800">Welcome Back</h1>
 
-            <p class="mt-2 text-sm text-gray-500">Login to manage your tasks</p>
+            <p class="mt-2 text-sm text-gray-500">Login with livewire</p>
         </div>
 
         {{-- Login Form --}}

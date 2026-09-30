@@ -40,9 +40,9 @@ new class extends Component
 >
     <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
         <div class="mb-6 text-center">
-            <h1 class="text-3xl font-bold text-gray-800">Create Account</h1>
+            <h1 class="text-3xl font-bold text-gray-800">Create New Account</h1>
 
-            <p class="mt-2 text-sm text-gray-500">Register to start managing your tasks</p>
+            <p class="mt-2 text-sm text-gray-500">Register (livewire)</p>
         </div>
 
         <form wire:submit="register" class="space-y-5">
@@ -129,7 +129,7 @@ new class extends Component
                 </span>
 
                 <span wire:loading wire:target="register">
-                    Creating account...
+                    Creating your account...
                 </span>
             </button>
         </form>
